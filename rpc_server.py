@@ -2,6 +2,12 @@
 import pika
 import json
 
+# Estabelece conexao com MongoDB
+from pymongo.connection import Connection
+connection = Connection("localhost")
+ 
+db = connection.foo
+
 # Estabelece a conexao e declara a Fila
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
@@ -26,12 +32,15 @@ def on_request(ch, method, props, body):
     n = str(body)
 
     responseIn = inputV()
+    db.foo.save=(responseIn) # Variavel salva no BD
     print(" [.] InputV: %s" % responseIn)
 
     responseOut = outputV()
+    db.foo.save=(responseOut)
     print(" [.] OutputV: %s" % responseOut)
 
     responseTemp = temp()
+    db.foo.save=(responseTemp)
     print(" [.] Temperatura: %s" % responseTemp)
 
     ch.basic_publish(exchange='',
