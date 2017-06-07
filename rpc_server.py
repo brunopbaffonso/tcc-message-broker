@@ -50,6 +50,7 @@ def on_request(ch, method, props, body):
                      body="-".join([responseIn, responseOut, responseTemp]))
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
+
 # Rodar mais que um processo do servidor, e equilibrar o carga igualmente
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(on_request, queue='rpc_queue')
