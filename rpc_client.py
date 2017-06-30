@@ -6,6 +6,7 @@ import json
 class LabRpcClient(object):
     # Estabelece a conexao, o canal e delara uma Fila de 'callback'
     def __init__(self):
+	self.queue_name = 'lab_test_01'
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
         self.channel = self.connection.channel()
@@ -34,7 +35,7 @@ class LabRpcClient(object):
 	# Publica-se a mensagem de Request
 	# Com duas propriedades: 'reply_to' e 'cerrelation_id'
         self.channel.basic_publish(exchange='',
-                                   routing_key='rpc_queue',
+                                   routing_key=self.queue_name,
                                    properties=pika.BasicProperties(
                                          reply_to = self.callback_queue,
                                          correlation_id = self.corr_id,
