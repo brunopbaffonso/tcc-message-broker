@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from bottle import run, route
+from bottle import run, route, request
 from pymongo import MongoClient
 import json
 
@@ -12,7 +12,7 @@ col = db.queue_name
 
 @route('/', method='GET')
 def index():
-	print col.find({}, {"_id" : 0})
+	print request.query.id
 	d = dict()
 	for u in col.find({}, {"_id" : 0}):
 		d.update(u)
