@@ -2,6 +2,9 @@
 import pika
 import uuid
 import json
+from bottle import run, route, request
+from pymongo import MongoClient
+
 
 class LabRpcClient(object):
     # Estabelece a conexao, o canal e delara uma Fila de 'callback'

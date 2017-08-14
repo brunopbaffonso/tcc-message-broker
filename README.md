@@ -10,4 +10,6 @@ $ sudo apt-get install python-pip
 
 $ sudo pip install pika
 
-$ sudo pip install pymongo==2.7.6
+$ sudo pip install pymongo==2.8
+
+$ sudo pip install bottle
