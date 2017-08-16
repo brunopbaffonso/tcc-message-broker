@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
-from bottle import run, route, request
+from bottle import run, route, request, template
 from pymongo import MongoClient
 import json
 import pika
+
+connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+
+channel = connection.channel()
 
 
 c = MongoClient('localhost', 27017)
@@ -12,39 +16,30 @@ db = c.message_broker
 
 col = db.queue_name
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
-channel = connection.channel()
 
 queue_name = "lab_test_01"
 
 channel.queue_declare(queue=queue_name)
 
+
 @route('/', method='GET')
 def index():
 	print request.query.id
 	d = dict()
-	for u in col.find({}, {"_id" : 0}):
+	for u in col.find({}, {"_id": 0}):
 		d.update(u)
 
 	return json.dumps(d)
 
-	run(host='localhost', port=8080, debug=True)
-
-
 @route('/hello', method='GET')
-def index():
-	app = Bottle()
-
-	@app.route('/hello')
-	def hello():
-		return "Hello World!"
-
-	run(host='localhost', port=8080, debug=True)
+def hello():
+	return "Hello World!"
 
 
-@route('/lab', method='GET')
-def index():
+@route('lab/<amp>/<offset>/<dutyCycle>/<freq>/<tipo>/<xPos>/<yPos>/<stream>', method='GET')
+def lab(amp, offset, dutyCycle, freq, tipo, xPos, yPos, stream):
+
 	# Declara a funcao de InputV
 	def inputV():
 		return {"valInputV" : 1}
@@ -70,7 +65,7 @@ def index():
 
 		# responseIn['_id'] = random_gen()
 
-		print collection.save(responseIn)
+		print col.save(responseIn)
 
 		ch.basic_publish(exchange='',
 						 routing_key=props.reply_to,
@@ -86,4 +81,4 @@ def index():
 	print(" [x] Awaiting RPC requests")
 	channel.start_consuming()
 
-	run(host='localhost', port=8080, debug=True)
+run(host='localhost', port=8080, debug=True)
