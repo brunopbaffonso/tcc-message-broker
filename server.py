@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-from bottle import run, route, request, template
+from bottle import run, route, request, template, Bottle
 import pika
 import bottle_pika
 from pymongo import MongoClient
 import json
 
-# Estabelece a conexao e declara a Fila
+# Establishes the Connection and Declares the queue
 queue_name = "lab_test_01"
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
@@ -15,17 +15,17 @@ channel = connection.channel()
 
 channel.queue_declare(queue=queue_name)
 
-# Estabelece conexao com o MongoDB
+# Establish connection with MongoDB
 c = MongoClient('localhost', 27017)
 
 db = c.message_broker
 
-# Declara a 'Collection' para armazenamento dos documentos (arquivos JSON) no banco NoSQL
+# Declare the 'Collection' for the document server (JSON files) in the NoSQL database
 col = db.queue_name
 
 
-# bottle_pika
-app = bottle.Bottle()
+# 'bottle_pika' library
+app = Bottle()
 pika_plugin = bottle_pika.Plugin(pika.URLParameters('amqp://localhost/'))
 app.install(pika_plugin)
 
@@ -39,12 +39,17 @@ def index():
 
 	return json.dumps(d)
 
-@app.route('/hello', method='GET')
-def hello(mq):
-	# Metodo de Comunicacao para interacao com RabbitMQ (Channel)
+@app.route('/bottle/<name>')
+def greet(name='Stranger'):
+    return template('Hello {{name}}, how are you?', name=name)
+
+# Example by 'bottle_pika' library on GitHub
+@app.route('/hello/<item>', method='GET')
+def hello(item, mq):
+	# Communication Method for RabbitMQ Interaction (Channel)
 	mq.basic_publish(exchange='',
-                     routing_key=props.reply_to,
-                     properties=pika.BasicProperties(correlation_id = \
+					routing_key=props.reply_to,
+					properties=pika.BasicProperties(correlation_id = \
                                                          props.correlation_id),
                      body="; ".join(responseIn))
 	return HTTPResponse(status=200)
@@ -53,19 +58,19 @@ def hello(mq):
 @app.route('lab/<amp>/<offset>/<dutyCycle>/<freq>/<tipo>/<xPos>/<yPos>/<stream>', method='GET')
 def lab(amp, offset, dutyCycle, freq, tipo, xPos, yPos, stream):
 
-	# Declara a funcao de InputV
+	# Declares the function of InputVolt
 	def inputV():
 		return {"valInputV" : 1}
 
-	# Declara a funcao de OutputV
+	# Declares the function of OutputVolt
 	def outputV():
 		return {"valOutputV": 2}
 
-	# Declara a funcao de Temperatura
+	# Declares the function of Temperature
 	def temp():
 		return {"valTemp": 3}
 
-	# Quando o Request e recebido, ele processa e manda o retorno
+	# When the Request is received, it processes and sends the return
 	def on_request(ch, method, props, body):
 		n = str(body)
 
@@ -87,7 +92,7 @@ def lab(amp, offset, dutyCycle, freq, tipo, xPos, yPos, stream):
 						 body="; ".join(responseIn))
 		ch.basic_ack(delivery_tag = method.delivery_tag)
 
-	# Rodar mais que um processo do servidor, e equilibrar o carga igualmente
+	# Run more than one server process and Load Balance
 	channel.basic_qos(prefetch_count=1)
 	channel.basic_consume(on_request, queue=queue_name)
 
