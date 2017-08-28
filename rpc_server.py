@@ -4,11 +4,11 @@ import json
 
 # Estabelece conexao com MongoDB
 from pymongo import MongoClient
+
 db_connection = MongoClient("localhost", 27017)
- 
 db = db_connection.message_broker
 
-# Estabelece a conexao e declara a Fila
+
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
 channel = connection.channel()

@@ -1,29 +1,36 @@
 #!/usr/bin/env python
 
 from bottle import run, route, request, template
+import pika
+import bottle_pika
 from pymongo import MongoClient
 import json
-import pika
+
+# Estabelece a conexao e declara a Fila
+queue_name = "lab_test_01"
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
 channel = connection.channel()
 
+channel.queue_declare(queue=queue_name)
 
+# Estabelece conexao com o MongoDB
 c = MongoClient('localhost', 27017)
 
 db = c.message_broker
 
+# Declara a 'Collection' para armazenamento dos documentos (arquivos JSON) no banco NoSQL
 col = db.queue_name
 
 
+# bottle_pika
+app = bottle.Bottle()
+pika_plugin = bottle_pika.Plugin(pika.URLParameters('amqp://localhost/'))
+app.install(pika_plugin)
 
-queue_name = "lab_test_01"
 
-channel.queue_declare(queue=queue_name)
-
-
-@route('/', method='GET')
+@app.route('/', method='GET')
 def index():
 	print request.query.id
 	d = dict()
@@ -32,12 +39,18 @@ def index():
 
 	return json.dumps(d)
 
-@route('/hello', method='GET')
-def hello():
-	return "Hello World!"
+@app.route('/hello', method='GET')
+def hello(mq):
+	# Metodo de Comunicacao para interacao com RabbitMQ (Channel)
+	mq.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body="; ".join(responseIn))
+	return HTTPResponse(status=200)
 
 
-@route('lab/<amp>/<offset>/<dutyCycle>/<freq>/<tipo>/<xPos>/<yPos>/<stream>', method='GET')
+@app.route('lab/<amp>/<offset>/<dutyCycle>/<freq>/<tipo>/<xPos>/<yPos>/<stream>', method='GET')
 def lab(amp, offset, dutyCycle, freq, tipo, xPos, yPos, stream):
 
 	# Declara a funcao de InputV
