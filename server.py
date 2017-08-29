@@ -39,13 +39,10 @@ def index():
 
 	return json.dumps(d)
 
-@app.route('/bottle/<name>')
-def greet(name='Stranger'):
-	return template('Hello {{name}}, how are you?', name=name)
 
 # Example by 'bottle_pika' library on GitHub
-@app.route('/hello/<item>', method='GET')
-def hello(item, mq):
+@app.route('/bottle/<item>', method='GET')
+def bottle(item, mq):
 	# Communication Method for RabbitMQ Interaction (Channel)
 	mq.basic_publish(exchange='',
 					routing_key=props.reply_to,
@@ -55,9 +52,13 @@ def hello(item, mq):
 	return HTTPResponse(status=200)
 
 
+@app.route('/hello/<name>', method='GET')
+def hello(name='Stranger'):
+	return template('Hello {{name}}, how are you?', name=name)
+
+
 @app.route('lab/<amp>/<offset>/<dutyCycle>/<freq>/<tipo>/<xPos>/<yPos>/<stream>', method='GET')
 def lab(amp, offset, dutyCycle, freq, tipo, xPos, yPos, stream):
-
 	# Declares the function of InputVolt
 	def inputV():
 		return {"valInputV" : 1}
