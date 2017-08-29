@@ -99,4 +99,4 @@ def lab(amp, offset, dutyCycle, freq, tipo, xPos, yPos, stream):
 	print(" [x] Awaiting RPC requests")
 	channel.start_consuming()
 
-run(host='localhost', port=8080, debug=True)
+run(app, host='localhost', port=8080, debug=True)
