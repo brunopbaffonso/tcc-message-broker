@@ -2,9 +2,9 @@
 from pymongo.connection import Connection
 connection = Connection("localhost")
  
-db = connection.foo
+db = connection.message_broker
 
 # Lista os dados
-cursor = db.foo.find()
+cursor = db.test.find()
 for d in cursor:
     print d

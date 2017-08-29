@@ -26,8 +26,8 @@ col = db.queue_name
 
 # 'bottle_pika' library
 app = Bottle()
-pika_plugin = bottle_pika.Plugin(pika.URLParameters('amqp://localhost/'))
-app.install(pika_plugin)
+#pika_plugin = bottle_pika.Plugin(pika.URLParameters('amqp://localhost:8080/'))
+#app.install(pika_plugin)
 
 
 @app.route('/', method='GET')
@@ -41,7 +41,7 @@ def index():
 
 @app.route('/bottle/<name>')
 def greet(name='Stranger'):
-    return template('Hello {{name}}, how are you?', name=name)
+	return template('Hello {{name}}, how are you?', name=name)
 
 # Example by 'bottle_pika' library on GitHub
 @app.route('/hello/<item>', method='GET')
