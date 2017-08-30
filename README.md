@@ -16,6 +16,6 @@ $ sudo pip install pymongo==2.8
 
 ### Curl Calls
 
-- GET Call: `curl -sG http://localhost:8080/lab/<queue>/<id>`
+- GET Call: `curl -sG http://localhost:8080/lab/get/<queue>/<id>`
 
-- POST Call: `curl -s -X POST "http://localhost:8080/lab/add/<queue>" --data '{}' -H "Content-Type: application/json"`
+- POST Call: `curl -s -X POST "http://localhost:8080/lab/set/<queue>" --data '{}' -H "Content-Type: application/json"`

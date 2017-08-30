@@ -4,12 +4,14 @@ from bottle import run, route, request, template, Bottle
 from pymongo.connection import Connection
 import json
 
-# Establishes the Connection and Declares the queue
-c = Connection("localhost")
-db = c['message_broker']
+# Establishes the Connection with the MongoDB and Declares the Collation
+c = Connection("localhost") # Connection 'c'
+db = c['message_broker'] # Collection 'message_broker'
 
+# Declares the class Bottle
 app = Bottle()
 
+#
 @app.route('/', method='GET')
 def index():
 	print request.query.id
@@ -19,22 +21,36 @@ def index():
 
 	return json.dumps(d)
 
-@app.route('/lab/<queue>/<id>', method='GET')
+# GET data from MongoDB
+@app.route('/lab/get/<queue>/<id>', method='GET')
 def get_data(queue, id):
-	####
+
+	# Validar se ID existe no Banco, se nao existir, criar Excecao
+    # Implementar o parametro STATUS
+
 	query = {"_id" : id}
+
 	col = db[queue]
-	cursor = col.find(query)
 
-	data = []
+	try:
+		cursor = col.find(query)
 
-	for d in cursor:
-		data.append(d)
+		data = []
+
+		for d in cursor:
+			data.append(d)
+
+	except Exception, e:
+		print str(e)
 
 	return json.dumps(data)
 
-@app.route('/lab/add/<queue>', method='POST')
-def save_data(queue=False):
+# SET data to MongoDB
+@app.route('/lab/set/<queue>', method='POST')
+def set_data(queue=False):
+
+	# Validar se o dado e um JSON, se nao for, tentar transforma-lo em um JSON
+    # Implementar o parametro STATUS
 
 	data = request.json
 
