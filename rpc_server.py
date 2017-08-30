@@ -8,7 +8,6 @@ from pymongo import MongoClient
 db_connection = MongoClient("localhost", 27017)
 db = db_connection.message_broker
 
-
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
 channel = connection.channel()
