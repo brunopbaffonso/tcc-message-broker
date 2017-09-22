@@ -4,9 +4,13 @@ from bottle import run, route, request, template, Bottle
 from pymongo.connection import Connection
 import json
 
-# Establishes the Connection with the MongoDB and Declares the Collation
-c = Connection("localhost") # Connection 'c'
-db = c['message_broker'] # Collection 'message_broker'
+try:
+	# Establishes the Connection with the MongoDB and Declares the Collation
+	col = Connection("localhost") # Connection 'c'
+	db = col['message_broker'] # Collection 'message_broker'
+
+except Exception, e:
+	print str(e)
 
 # Declares the class Bottle
 app = Bottle()
@@ -26,9 +30,8 @@ def index():
 def get_data(queue, id):
 
 	# Validar se ID existe no Banco, se nao existir, criar Excecao
-    # Implementar o parametro STATUS
 
-	query = {"_id" : id}
+	query = { "_id" : id }
 
 	col = db[queue]
 
@@ -47,15 +50,19 @@ def get_data(queue, id):
 
 # SET data to MongoDB
 @app.route('/lab/set/<queue>', method='POST')
-def set_data(queue=False):
+def set_data(queue):
 
 	# Validar se o dado e um JSON, se nao for, tentar transforma-lo em um JSON
     # Implementar o parametro STATUS
+
+	# status = "new"  # new, ready, run, wait, finish
 
 	data = request.json
 
 	col = db[queue]
 
 	col.insert(data)
+
+
 
 run(app, host='localhost', port=8080, debug=True)
