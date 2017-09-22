@@ -25,10 +25,10 @@ collection = db.queue
 
 channel.queue_declare(queue=queue)
 
-#board = Arduino('/dev/ttyUSB0')
-#pin_d13 = board.get_pin('d:13:o')
-#pin_trig = board.get_pin('d:12:i')
-#pin_echo = board.get_pin('d:11:o')
+board = Arduino('/dev/ttyUSB0')
+pin_d13 = board.get_pin('d:13:o')
+pin_trig = board.get_pin('d:12:i')
+pin_echo = board.get_pin('d:11:o')
 
 def getDB():
 
@@ -52,22 +52,22 @@ def getDB():
 
 # Declara a funcao de InputV
 def setD13():
-#    try:
-#        pin_d13.write(1)
+    try:
+        pin_d13.write(1)
 
-#    except Exception, e:
-#        print str(e)
+    except Exception, e:
+        print str(e)
 
     return { "GPIO" : { "D13" : 1 } }
 
 # Declara a funcao de OutputV
 def getDistance():
-#    try:
-#        pin_trig.write(0)
-#        sleep(0.001)
-#        pin_trig.write(1)
-#        sleep(0.001)
-#        pin_trig.write(0)
+    try:
+        pin_trig.write(0)
+        sleep(0.001)
+        pin_trig.write(1)
+        sleep(0.001)
+        pin_trig.write(0)
 
         # #Read the signal from the sensor: a HIGH pulse whose
         # #duration is the time (in microseconds) from the sending
@@ -78,8 +78,8 @@ def getDistance():
         # #convert the time into a distance
         # (duration/2) / 29.1;
 
-#    except Exception, e:
-#        print str(e)
+    except Exception, e:
+        print str(e)
 
     return { "GPIO" : { "D12" : "Trigger" , "D11" : "Echo" } }
 
