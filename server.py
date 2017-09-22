@@ -21,7 +21,7 @@ app = Bottle()
 class RpcClient(object):
 	# Estabelece a conexao, o canal e delara uma Fila de 'callback'
 	def __init__(self):
-		self.queue_name = 'lab_test_01'
+		self.queue_name = 'message_broker'
 		self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 
 		self.channel = self.connection.channel()
@@ -63,7 +63,8 @@ class RpcClient(object):
 		# Retorna a resposta para o usuario
 		return str(self.response)
 
-#
+
+# Index
 @app.route('/', method='GET')
 def index():
 	print request.query.id
@@ -72,6 +73,30 @@ def index():
 		d.update(u)
 
 	return json.dumps(d)
+
+# GET all data from MongoDB
+@app.route('/lab/get/<queue>', method='GET')
+def get_data(queue):
+
+	col = db[queue]
+
+	try:
+		cursor = col.find()
+
+		data = []
+
+		for d in cursor:
+			data.append(d)
+
+	except Exception, e:
+		print str(e)
+
+	mq_client = RpcClient()
+
+	mq_client.call(data)
+
+	return json.dumps(data)
+
 
 # GET data from MongoDB
 @app.route('/lab/get/<queue>/<id>', method='GET')
@@ -96,8 +121,7 @@ def get_data(queue, id):
 
 	mq_client = RpcClient()
 
-	response = mq_client.call(data)
-
+	mq_client.call(data)
 
 	return json.dumps(data)
 
@@ -118,6 +142,8 @@ def set_data(queue):
 
 	mq_client = RpcClient()
 
-	response = mq_client.call(data)
+	mq_client.call(data)
+
+	return json.dumps(data)
 
 run(app, host='localhost', port=8080, debug=True)

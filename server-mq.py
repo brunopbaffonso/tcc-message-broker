@@ -19,11 +19,11 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost')
 
 channel = connection.channel()
 
-queue = "message_broker"
+queue_name = "message_broker"
 
-collection = db.queue
+collection = db.queue_name
 
-channel.queue_declare(queue=queue)
+channel.queue_declare(queue=queue_name)
 
 board = Arduino('/dev/ttyUSB0')
 pin_d13 = board.get_pin('d:13:o')
@@ -34,7 +34,7 @@ def getDB():
 
     query = { "status" : "new" }
 
-    col = db[queue]
+    col = db[queue_name]
 
     try:
         cursor = col.find(query)
@@ -89,9 +89,9 @@ def on_request(ch, method, props, body):
     n = str(body)
 
     responseIn = { "set_d13" : setD13(), "get_distance" : getDistance() }
-    print(" [.] InputV: %s " % responseIn['set_d13'])
+    print(" [.] Set D13: %s " % responseIn['set_d13'])
 
-    print(" [.] OutputV: %s " % responseIn['get_distance'])
+    print(" [.] Distance: %s " % responseIn['get_distance'])
 
     # responseIn['_id'] = random_gen()
 
@@ -106,10 +106,7 @@ def on_request(ch, method, props, body):
 
 # Rodar mais que um processo do servidor, e equilibrar o carga igualmente
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(on_request, queue=queue)
-try:
-    print(" [x] Awaiting RPC requests")
-    channel.start_consuming()
+channel.basic_consume(on_request, queue=queue_name)
 
-except KeyboardInterrupt:
-    channel.stop_consuming()
+print(" [x] Awaiting RPC requests")
+channel.start_consuming()
