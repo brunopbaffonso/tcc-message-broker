@@ -14,6 +14,9 @@ $ sudo pip install bottle
 
 $ sudo pip install pymongo==2.8
 
+$ sudo pip install pyfirmata
+
+
 ### Curl Calls
 
 - GET Call: `curl -sG http://localhost:8080/lab/get/<queue>/<id>`
