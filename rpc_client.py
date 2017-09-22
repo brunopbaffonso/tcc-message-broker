@@ -51,7 +51,9 @@ class LabRpcClient(object):
 	# Retorna a resposta para o usuario
         return str(self.response)
 
-lab_rpc = LabRpcClient()
+    lab_rpc = LabRpcClient()
+
+
 
 amp = raw_input("Amplitude[DBL]: ")
 offset = raw_input("Offset[DBL]: ")

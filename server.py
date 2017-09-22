@@ -3,6 +3,8 @@
 from bottle import run, route, request, template, Bottle
 from pymongo.connection import Connection
 import json
+import uuid
+import pika
 
 try:
 	# Establishes the Connection with the MongoDB and Declares the Collation
@@ -14,6 +16,52 @@ except Exception, e:
 
 # Declares the class Bottle
 app = Bottle()
+
+# RabbitMQ Client
+class RpcClient(object):
+	# Estabelece a conexao, o canal e delara uma Fila de 'callback'
+	def __init__(self):
+		self.queue_name = 'lab_test_01'
+		self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+
+		self.channel = self.connection.channel()
+
+		result = self.channel.queue_declare(exclusive=True)
+		self.callback_queue = result.method.queue
+
+		# Inscricao para a fila 'callback', e assim receber retornos do RPC
+		self.channel.basic_consume(self.on_response, no_ack=True,
+								   queue=self.callback_queue)
+
+	# Para toda mensagem de resposta, ele checa se a 'correlation_id' e o qual esta sendo procurado
+	# Se for, ele salva a resposta em 'self.response' e sai do loop
+	def on_response(self, ch, method, props, body):
+		if self.corr_id == props.correlation_id:
+			self.response = body
+
+	# Define-se a funcao principal 'call' (ele faz a requisicao RPC atual)
+	def call(self, s):
+		self.response = None
+
+		# Geracao um unico numero 'correlation_id' e salva-o
+		# A funcao de callback 'on_responde' ira usar este valor para pegar a resposta apropriada
+		self.corr_id = str(uuid.uuid4())
+
+		# Publica-se a mensagem de Request
+		# Com duas propriedades: 'reply_to' e 'cerrelation_id'
+		self.channel.basic_publish(exchange='',
+								   routing_key=self.queue_name,
+								   properties=pika.BasicProperties(
+									   reply_to=self.callback_queue,
+									   correlation_id=self.corr_id,
+								   ),
+								   body=str(s))
+		# Aguarda a resposta apropriada chegar
+		while self.response is None:
+			self.connection.process_data_events()
+
+		# Retorna a resposta para o usuario
+		return str(self.response)
 
 #
 @app.route('/', method='GET')
@@ -46,6 +94,11 @@ def get_data(queue, id):
 	except Exception, e:
 		print str(e)
 
+	mq_client = RpcClient()
+
+	response = mq_client.call(data)
+
+
 	return json.dumps(data)
 
 # SET data to MongoDB
@@ -63,6 +116,8 @@ def set_data(queue):
 
 	col.insert(data)
 
+	mq_client = RpcClient()
 
+	response = mq_client.call(data)
 
 run(app, host='localhost', port=8080, debug=True)

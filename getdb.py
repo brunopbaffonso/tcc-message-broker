@@ -5,6 +5,6 @@ connection = Connection("localhost")
 db = connection.message_broker
 
 # Lista os dados
-cursor = db.lab_test_01.find()
+cursor = db.message_broker.find()
 for d in cursor:
     print d
