@@ -6,6 +6,7 @@ import json
 import uuid
 import pika
 
+
 try:
 	# Establishes the Connection with the MongoDB and Declares the Collation
 	col = Connection("localhost") # Connection 'c'
@@ -14,8 +15,10 @@ try:
 except Exception, e:
 	print str(e)
 
-# Declares the class Bottle
+
+# Set the class Bottle
 app = Bottle()
+
 
 # RabbitMQ Client
 class RpcClient(object):
@@ -33,22 +36,22 @@ class RpcClient(object):
 		self.channel.basic_consume(self.on_response, no_ack=True,
 								   queue=self.callback_queue)
 
-	# Para toda mensagem de resposta, ele checa se a 'correlation_id' e o qual esta sendo procurado
-	# Se for, ele salva a resposta em 'self.response' e sai do loop
+	# For every response message, it checks if 'correlational_id' is being searched
+	# If it's true, it saves the response in 'self.response' and exits the loop
 	def on_response(self, ch, method, props, body):
 		if self.corr_id == props.correlation_id:
 			self.response = body
 
-	# Define-se a funcao principal 'call' (ele faz a requisicao RPC atual)
+	# Define the main function 'call' (it does the current RPC request)
 	def call(self, s):
 		self.response = None
 
-		# Geracao um unico numero 'correlation_id' e salva-o
-		# A funcao de callback 'on_responde' ira usar este valor para pegar a resposta apropriada
+		# Generate a unique 'correlation_id' number and save it
+		# The callback function 'on_responde' will use this value to get the appropriate answer
 		self.corr_id = str(uuid.uuid4())
 
-		# Publica-se a mensagem de Request
-		# Com duas propriedades: 'reply_to' e 'cerrelation_id'
+		# Post the Request message
+		# With Two Properties: 'reply_to' and 'cerrelation_id'
 		self.channel.basic_publish(exchange='',
 								   routing_key=self.queue_name,
 								   properties=pika.BasicProperties(
@@ -56,23 +59,23 @@ class RpcClient(object):
 									   correlation_id=self.corr_id,
 								   ),
 								   body=str(s))
-		# Aguarda a resposta apropriada chegar
+
+		# Wait for the appropriate response to arrive
 		while self.response is None:
 			self.connection.process_data_events()
 
-		# Retorna a resposta para o usuario
+		# Returns the response to the user
 		return str(self.response)
 
 
 # Index
 @app.route('/', method='GET')
 def index():
-	print request.query.id
-	d = dict()
-	for u in col.find({}, {"_id": 0}):
-		d.update(u)
+	print "/lab/get/<queue_name>"
+	print "/lab/get/<queue_name>/<id>"
+	print "/lab/set/<queue>/<state>"
 
-	return json.dumps(d)
+	return 1
 
 # GET all data from MongoDB
 @app.route('/lab/get/<queue>', method='GET')
@@ -125,25 +128,24 @@ def get_data(queue, id):
 
 	return json.dumps(data)
 
-# SET data to MongoDB
-@app.route('/lab/set/<queue>', method='POST')
-def set_data(queue):
 
-	# Validar se o dado e um JSON, se nao for, tentar transforma-lo em um JSON
-    # Implementar o parametro STATUS
+# SET data to MongoDB
+@app.route('/lab/set/<queue>/<state>', method='POST')
+def set_data(queue, state):
 
 	# status = "new"  # new, ready, run, wait, finish
 
-	data = request.json
+	data = { "state" : state }
 
-	col = db[queue]
-
-	col.insert(data)
-
+	# Create the RabbitMQ Client Object
 	mq_client = RpcClient()
-
 	mq_client.call(data)
 
+	# Save the 'data' JSON in Collation
+	col = db[queue]
+	col.insert(data)
+
 	return json.dumps(data)
+
 
 run(app, host='localhost', port=8080, debug=True)

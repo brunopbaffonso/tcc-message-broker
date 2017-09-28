@@ -1,1 +1,1 @@
-curl -s -X POST "http://localhost:8080/lab/set/message_broker" --data '{ "Var1" : "var1" }' -H "Content-Type: application/json"
+curl -s -X POST "http://localhost:8080/lab/set/message_broker/on"
