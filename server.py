@@ -71,71 +71,48 @@ class RpcClient(object):
 # Index
 @app.route('/', method='GET')
 def index():
-	print "/lab/get/<queue_name>"
-	print "/lab/get/<queue_name>/<id>"
-	print "/lab/set/<queue>/<state>"
+	print "Hello World"
+
+	return 0
+
+# GET all data from MongoDB
+@app.route('/lab/get/message_broker', method='GET')
+def get_all_data():
+
+	# col = db[queue]
+
+	try:
+		cursor = db.message_broker.find()
+		for d in cursor:
+			print d
+
+	except Exception, e:
+		print str(e)
 
 	return 1
 
-# GET all data from MongoDB
-@app.route('/lab/get/<queue>', method='GET')
-def get_data(queue):
-
-	col = db[queue]
-
-	try:
-		cursor = col.find()
-
-		data = []
-
-		for d in cursor:
-			data.append(d)
-
-	except Exception, e:
-		print str(e)
-
-	mq_client = RpcClient()
-
-	mq_client.call(data)
-
-	return json.dumps(data)
-
 
 # GET data from MongoDB
-@app.route('/lab/get/<queue>/<id>', method='GET')
-def get_data(queue, id):
+@app.route('/lab/get/message_broker/<id>', method='GET')
+def get_data(id):
 
-	# Validar se ID existe no Banco, se nao existir, criar Excecao
-
-	query = { "_id" : id }
-
-	col = db[queue]
+	# col = db[queue]
 
 	try:
-		cursor = col.find(query)
-
-		data = []
-
-		for d in cursor:
-			data.append(d)
+		data = db.message_broker.find( { "_id": id } )
+		print data
 
 	except Exception, e:
 		print str(e)
-
-	mq_client = RpcClient()
-
-	mq_client.call(data)
 
 	return json.dumps(data)
 
 
 # SET data to MongoDB
-@app.route('/lab/set/<queue>/<state>', method='POST')
-def set_data(queue, state):
+@app.route('/lab/set/<queue>', method='POST')
+def set_data(queue):
 
-	# status = "new"  # new, ready, run, wait, finish
-
-	data = { "state" : state }
+	data = request.json
 
 	# Create the RabbitMQ Client Object
 	mq_client = RpcClient()

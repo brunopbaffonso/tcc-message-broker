@@ -24,26 +24,6 @@ board = Arduino('/dev/ttyUSB0')
 pin_d13 = board.get_pin('d:13:o')
 
 
-# Define the GET function from MongoDB
-def getDB():
-    query = { "status" : "new" }
-
-    col = db[queue_name]
-
-    try:
-        cursor = col.find(query)
-
-        data = []
-
-        for d in cursor:
-            data.append(d)
-
-    except Exception, e:
-        print str(e)
-
-    return json.dumps(data)
-
-
 # Define the SET 1 (one) function to MongoDB
 def setD13_on():
     try:
@@ -52,7 +32,7 @@ def setD13_on():
     except Exception, e:
         print str(e)
 
-    return { "GPIO" : { "D13" : 1 } }
+    return { "GPIO" : { "D13" : "On" } }
 
 
 # Define the SET 0 (zero) function to MongoDB
@@ -63,16 +43,23 @@ def setD13_off():
     except Exception, e:
         print str(e)
 
-    return { "GPIO" : { "D13" : 0 } }
+    return { "GPIO" : { "D13" : "Off" } }
 
 
 # The Request is Received, it is Processed and Send the Response
 def on_request(ch, method, props, body):
-    n = str(body)
+    json_string = str(body)
 
-    responseIn = { "setD13_on" : setD13_on() }
+    if json_string == "{u'status': u'new', u'state': u'on'}":
+        responseIn = {"setD13_on": setD13_on()}
 
-    print(" [.] Set D13: %s " % responseIn['setD13_on'])
+        print(" [.] Set D13: %s " % responseIn['setD13_on'])
+
+    else:
+        responseIn = {"setD13_off": setD13_off()}
+
+        print(" [.] Set D13: %s " % responseIn['setD13_off'])
+
 
     # responseIn['_id'] = random_gen()
 
