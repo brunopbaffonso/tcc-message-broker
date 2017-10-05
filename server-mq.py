@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from pyfirmata import Arduino, util
 import pika
-import json
 
 
 try:

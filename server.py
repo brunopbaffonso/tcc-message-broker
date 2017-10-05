@@ -5,7 +5,7 @@ from pymongo.connection import Connection
 import json
 import uuid
 import pika
-
+import random, string
 
 try:
 	# Establishes the Connection with the MongoDB and Declares the Collation
@@ -18,6 +18,16 @@ except Exception, e:
 
 # Set the class Bottle
 app = Bottle()
+
+# Set the vector Alpha-Numeric for _id
+
+# Create a Random '_id'
+def randomId():
+	rand = ""
+	for i in range(1,24):
+		rand += random.choice(string.lowercase + string.digits)
+
+	return rand
 
 
 # RabbitMQ Client
@@ -111,18 +121,32 @@ def get_data(id):
 # SET data to MongoDB
 @app.route('/lab/set/<queue>', method='POST')
 def set_data(queue):
-
 	data = request.json
 
-	# Create the RabbitMQ Client Object
-	mq_client = RpcClient()
-	mq_client.call(data)
+	print data
 
-	# Save the 'data' JSON in Collation
-	col = db[queue]
-	col.insert(data)
+	data["_id"].append(randomId())
 
-	return json.dumps(data)
+	print data
+
+	d = dict(data)
+
+	print d
+
+	try:
+
+		# Create the RabbitMQ Client Object
+		mq_client = RpcClient()
+		mq_client.call(d)
+
+		# Save the 'data' JSON in Collation
+		col = db[queue]
+		col.insert(d)
+
+	except Exception, e:
+		print str(e)
+
+	return json.dumps(d)
 
 
 run(app, host='localhost', port=8080, debug=True)
