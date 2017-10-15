@@ -2,12 +2,11 @@
 #from pyfirmata import Arduino, util
 import pika
 
-try:
-    credentials = pika.PlainCredentials('guest', 'guest')
-    # Establishes the Connection with the RabbitMQ and Declares the Channel
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', 5672, '/', credentials))  # RabbitMQ Connection
-    channel = connection.channel()  # RabbitMQ Channel in Connection
 
+try:
+    # Establishes the Connection with the RabbitMQ and Declares the Channel
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))  # RabbitMQ Connection
+    channel = connection.channel()  # RabbitMQ Channel in Connection
 except Exception, e:
 	print str(e)
 
@@ -25,37 +24,29 @@ channel.queue_declare(queue=queue_name)
 
 
 # Define the SET 1 (one) function to MongoDB
-def setD13_on(json_string):
-#    try:
-#        pin_d13.write(1)
+def setD13_on():
 
-#    except Exception, e:
-#        print str(e)
 
-    return json_string
+    return { "GPIO" : { "D13" : "On" } }
 
 
 # Define the SET 0 (zero) function to MongoDB
-def setD13_off(json_string):
-#    try:
-#        pin_d13.write(0)
+def setD13_off():
 
-#    except Exception, e:
-#        print str(e)
+    return { "GPIO" : { "D13" : "Off" } }
 
-    return json_string
 
 # The Request is Received, it is Processed and Send the Response
 def on_request(ch, method, props, body):
     json_string = str(body)
 
-    if json_string.find("on"):
-        responseIn = {"setD13_on": setD13_on(json_string)}
+    if json_string == "{u'status': u'new', u'state': u'on'}":
+        responseIn = {"setD13_on": setD13_on()}
 
         print(" [.] Set D13: %s " % responseIn['setD13_on'])
 
     else:
-        responseIn = {"setD13_off": setD13_off(json_string)}
+        responseIn = {"setD13_off": setD13_off()}
 
         print(" [.] Set D13: %s " % responseIn['setD13_off'])
 

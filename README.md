@@ -1,10 +1,14 @@
 # tcc-message-broker
 
-With Python 2.7.6 and the MongoDB 3.2 installed
+With Python 2.7.6 and the MongoDB 3.4 installed
 
 Follow de commands below: 
 
 $ sudo apt-get update
+
+$ sudo apt-get install rabbitmq-server
+
+$ sudo rabbitmq-plugins enable rabbitmq_management
 
 $ sudo apt-get install python-pip
 

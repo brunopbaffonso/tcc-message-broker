@@ -32,17 +32,18 @@ def randomId():
 
 # RabbitMQ Client
 class RpcClient(object):
-	# Estabelece a conexao, o canal e delara uma Fila de 'callback'
 	def __init__(self):
+		credentials = pika.PlainCredentials('guest', 'guest')
+		# Establishes the Connection with the RabbitMQ and Declares the Channel
 		self.queue_name = 'message_broker'
-		self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+		self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', 5672, '/', credentials))
 
 		self.channel = self.connection.channel()
 
 		result = self.channel.queue_declare(exclusive=True)
 		self.callback_queue = result.method.queue
 
-		# Inscricao para a fila 'callback', e assim receber retornos do RPC
+		# Submit for the queue 'callback' and so receive RPC returns
 		self.channel.basic_consume(self.on_response, no_ack=True,
 								   queue=self.callback_queue)
 
@@ -121,17 +122,14 @@ def get_data(id):
 # SET data to MongoDB
 @app.route('/lab/set/<queue>', method='POST')
 def set_data(queue):
+	# Request the JSON from HTTP
 	data = request.json
 
-	print data
+	# Add the Random ID to the JSON data
+	data['_id'] = randomId()
 
-	data["_id"].append(randomId())
-
-	print data
-
+	# Trasform the JSON data into 'Dictionary'
 	d = dict(data)
-
-	print d
 
 	try:
 
@@ -149,4 +147,4 @@ def set_data(queue):
 	return json.dumps(d)
 
 
-run(app, host='localhost', port=8080, debug=True)
+run(app, host='0.0.0.0', port=8080, debug=True)
