@@ -4,9 +4,22 @@
     <option name="serverConfigurations">
       <list>
         <ServerConfiguration>
+          <option name="label" value="Localhost" />
           <option name="serverUrls">
             <list>
               <option value="localhost:27017" />
+            </list>
+          </option>
+          <option name="sshTunnelingConfiguration">
+            <SshTunnelingConfiguration />
+          </option>
+          <option name="userDatabase" value="message_broker" />
+        </ServerConfiguration>
+        <ServerConfiguration>
+          <option name="label" value="PLSS" />
+          <option name="serverUrls">
+            <list>
+              <option value="interno.plss.com.br:15007" />
             </list>
           </option>
           <option name="sshTunnelingConfiguration">

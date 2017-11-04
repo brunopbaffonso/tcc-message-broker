@@ -49,7 +49,7 @@ def setD13_off(json_string):
 def on_request(ch, method, props, body):
     json_string = str(body)
 
-    if json_string.find("on"):
+    if json_string.find('on') != -1:
         responseIn = {"setD13_on": setD13_on(json_string)}
 
         print(" [.] Set D13: %s " % responseIn['setD13_on'])
