@@ -72,7 +72,7 @@ def on_request(ch, method, props, body):
 
 # Run more than one Process in Server and Load Balancing
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(on_request, queue=queue_name)
+channel.basic_consume(queue=queue_name, on_message_callback=on_request)
 
 
 print(" [x] Awaiting RPC requests")
